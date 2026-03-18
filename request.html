@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>POC - 민원 입력</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="./request.html" class="active">민원 입력</a>
+    <a href="./index.html">민원 조회</a>
+  </nav>
+
+  <h1>민원 입력 (POC)</h1>
+
+  <div class="form-card">
+    <div class="form-row">
+      <label for="complaintTitle">민원명</label>
+      <input id="complaintTitle" type="text" placeholder="예: 처리상태 검색조건 추가">
+    </div>
+
+    <div class="form-row">
+      <label for="requester">요청자</label>
+      <input id="requester" type="text" placeholder="예: 홍길동">
+    </div>
+
+    <div class="form-row">
+      <label for="systemName">시스템명</label>
+      <input id="systemName" type="text" placeholder="예: 민원조회 시스템">
+    </div>
+
+    <div class="form-row">
+      <label for="priority">우선순위</label>
+      <select id="priority">
+        <option value="상">상</option>
+        <option value="중" selected>중</option>
+        <option value="하">하</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="detail">요청내용</label>
+      <textarea id="detail" rows="6" placeholder="예: 민원조회 화면에 처리상태 검색조건과 결과 컬럼을 추가해주세요."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button onclick="submitComplaint()">등록</button>
+      <button class="secondary" onclick="resetComplaintForm()">초기화</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>최근 등록 내역</h2>
+    <table id="requestResult">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>민원명</th>
+          <th>요청자</th>
+          <th>시스템명</th>
+          <th>우선순위</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="./request.js"></script>
+</body>
+</html>

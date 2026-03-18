@@ -1,30 +1,86 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   padding: 30px;
-}
-
-h1 {
   color: #2c3e50;
+  background: #f7f9fc;
 }
 
-.box {
+h1, h2 {
+  color: #1f3b5b;
+}
+
+.nav {
+  margin-bottom: 24px;
+}
+
+.nav a {
+  display: inline-block;
+  text-decoration: none;
+  color: #1f3b5b;
+  background: #e8eef7;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-right: 8px;
+}
+
+.nav a.active {
+  background: #3498db;
+  color: #fff;
+}
+
+.box, .form-card {
+  background: #fff;
+  border: 1px solid #d8e1ea;
+  border-radius: 12px;
+  padding: 20px;
   margin-bottom: 20px;
 }
 
+.form-row {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  max-width: 720px;
+  padding: 10px;
+  border: 1px solid #bcc9d6;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
 button {
-  padding: 6px 12px;
+  padding: 10px 16px;
   background: #3498db;
   color: white;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  margin-right: 8px;
+}
+
+button.secondary {
+  background: #7f8c8d;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  background: #fff;
 }
 
 th, td {
-  border: 1px solid #ccc;
+  border: 1px solid #d8e1ea;
   padding: 10px;
+  text-align: left;
+}
+
+th {
+  background: #eef4fb;
 }

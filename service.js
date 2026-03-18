@@ -12,26 +12,25 @@ function search() {
   tbody.innerHTML = "";
 
   let result = data;
-
   if (status !== "") {
     result = data.filter(d => d.status === status);
   }
 
   result.forEach(d => {
-    const row = `
+    tbody.innerHTML += `
       <tr>
         <td>${d.id}</td>
         <td>${d.name}</td>
         <td>${d.status}</td>
       </tr>
     `;
-    tbody.innerHTML += row;
   });
 
   saveLog(status);
 }
 
-// 로그 저장 (POC)
 function saveLog(status) {
-  console.log("검색 로그 저장:", status);
+  console.log("검색 로그 저장:", status || "전체");
 }
+
+window.onload = search;

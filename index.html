@@ -6,33 +6,37 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <nav class="nav">
+    <a href="./request.html">민원 입력</a>
+    <a href="./index.html" class="active">민원 조회</a>
+  </nav>
 
-<h1>민원조회 (POC)</h1>
+  <h1>민원조회 (POC)</h1>
 
-<div class="box">
-  <label>처리상태:</label>
-  <select id="status">
-    <option value="">전체</option>
-    <option value="접수">접수</option>
-    <option value="처리중">처리중</option>
-    <option value="완료">완료</option>
-    <option value="반려">반려</option>
-  </select>
+  <div class="box">
+    <label for="status">처리상태:</label>
+    <select id="status">
+      <option value="">전체</option>
+      <option value="접수">접수</option>
+      <option value="처리중">처리중</option>
+      <option value="완료">완료</option>
+      <option value="반려">반려</option>
+    </select>
 
-  <button onclick="search()">조회</button>
-</div>
+    <button onclick="search()">조회</button>
+  </div>
 
-<table id="result">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>민원명</th>
-      <th>처리상태</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <table id="result">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>민원명</th>
+        <th>처리상태</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<script src="./service.js"></script>
+  <script src="./service.js"></script>
 </body>
 </html>
