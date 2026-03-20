@@ -1,88 +1,174 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>민원 조회 (POC)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background: #f7f8fa;
+    }
+    h1 {
+      margin-bottom: 16px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    select, button {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #f0f2f5;
+    }
+    .empty-row td {
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>민원 조회 (POC)</h1>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
-  authDomain: "pl-agent-poc.firebaseapp.com",
-  projectId: "pl-agent-poc",
-  storageBucket: "pl-agent-poc.firebasestorage.app",
-  messagingSenderId: "1099031062367",
-  appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
-};
+  <div class="toolbar">
+    <select id="status">
+      <option value="">전체</option>
+      <option value="접수">접수</option>
+      <option value="처리중">처리중</option>
+      <option value="완료">완료</option>
+    </select>
+    <button id="searchBtn" type="button">조회</button>
+  </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  <table id="result">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>민원명</th>
+        <th>처리상태</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="empty-row">
+        <td colspan="3">불러오는 중...</td>
+      </tr>
+    </tbody>
+  </table>
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-async function loadComplaints() {
-  const tbody = document.querySelector("#result tbody");
-  const selectedStatus = document.getElementById("status")?.value ?? "";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
+      authDomain: "pl-agent-poc.firebaseapp.com",
+      projectId: "pl-agent-poc",
+      storageBucket: "pl-agent-poc.firebasestorage.app",
+      messagingSenderId: "1099031062367",
+      appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
+    };
 
-  if (!tbody) return;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  tbody.innerHTML = "<tr><td colspan='3'>불러오는 중...</td></tr>";
-
-  try {
-    const snapshot = await getDocs(collection(db, "complaints"));
-
-    if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='3'>등록된 민원이 없습니다.</td></tr>";
-      return;
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
-    const items = [];
+    async function loadComplaints() {
+      const tbody = document.querySelector("#result tbody");
+      const selectedStatus = document.getElementById("status")?.value ?? "";
 
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      items.push({
-        reqNo: data.reqNo ?? "-",
-        title: data.title ?? "",
-        status: data.status ?? ""
-      });
-    });
+      if (!tbody) return;
 
-    items.sort((a, b) => Number(b.reqNo || 0) - Number(a.reqNo || 0));
-
-    const filtered = selectedStatus
-      ? items.filter((item) => item.status === selectedStatus)
-      : items;
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='3'>조회 결과가 없습니다.</td></tr>";
-      return;
-    }
-
-    let html = "";
-    filtered.forEach((item) => {
-      html += `
-        <tr>
-          <td>${escapeHtml(item.reqNo)}</td>
-          <td>${escapeHtml(item.title)}</td>
-          <td>${escapeHtml(item.status)}</td>
+      tbody.innerHTML = `
+        <tr class="empty-row">
+          <td colspan="3">불러오는 중...</td>
         </tr>
       `;
+
+      try {
+        const snapshot = await getDocs(collection(db, "complaints"));
+
+        if (snapshot.empty) {
+          tbody.innerHTML = `
+            <tr class="empty-row">
+              <td colspan="3">등록된 민원이 없습니다.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        const items = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          items.push({
+            reqNo: data.reqNo ?? "-",
+            title: data.title ?? "",
+            status: data.status ?? ""
+          });
+        });
+
+        items.sort((a, b) => Number(b.reqNo || 0) - Number(a.reqNo || 0));
+
+        const filtered = selectedStatus
+          ? items.filter((item) => item.status === selectedStatus)
+          : items;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr class="empty-row">
+              <td colspan="3">조회 결과가 없습니다.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        let html = "";
+        filtered.forEach((item) => {
+          html += `
+            <tr>
+              <td>${escapeHtml(item.reqNo)}</td>
+              <td>${escapeHtml(item.title)}</td>
+              <td>${escapeHtml(item.status)}</td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = html;
+      } catch (error) {
+        console.error("민원 조회 오류:", error);
+        tbody.innerHTML = `
+          <tr class="empty-row">
+            <td colspan="3">조회 중 오류가 발생했습니다.</td>
+          </tr>
+        `;
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("searchBtn")?.addEventListener("click", loadComplaints);
+      await loadComplaints();
     });
-
-    tbody.innerHTML = html;
-  } catch (error) {
-    console.error("민원 조회 오류:", error);
-    tbody.innerHTML = "<tr><td colspan='3'>조회 중 오류가 발생했습니다.</td></tr>";
-  }
-}
-
-window.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("searchBtn")?.addEventListener("click", loadComplaints);
-  await loadComplaints();
-});
+  </script>
+</body>
+</html>
