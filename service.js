@@ -43,7 +43,6 @@ async function loadComplaints() {
     }
 
     const items = [];
-
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
       items.push({
