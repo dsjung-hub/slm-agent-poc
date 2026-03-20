@@ -152,7 +152,7 @@ function applyFilter() {
 
 async function loadRequests() {
   try {
-    const q = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "complaints"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
 
     allRequests = snapshot.docs.map((doc) => ({
