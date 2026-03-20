@@ -2,12 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
-  getDocs,
-  query,
-  orderBy
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// request.js에 넣은 것과 동일한 firebaseConfig 사용
 const firebaseConfig = {
   apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
   authDomain: "pl-agent-poc.firebaseapp.com",
@@ -38,37 +35,49 @@ async function loadComplaints() {
   tbody.innerHTML = "<tr><td colspan='3'>불러오는 중...</td></tr>";
 
   try {
-    const q = query(collection(db, "complaints"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db, "complaints"));
 
     if (snapshot.empty) {
       tbody.innerHTML = "<tr><td colspan='3'>등록된 민원이 없습니다.</td></tr>";
       return;
     }
 
-    let html = "";
-    let id = 1;
-
+    const items = [];
     snapshot.forEach((doc) => {
-      const item = doc.data();
+      const data = doc.data();
+      items.push({
+        docId: doc.id,
+        title: data.title ?? "",
+        status: data.status ?? "",
+        createdAt: data.createdAt ?? null
+      });
+    });
 
-      if (selectedStatus && item.status !== selectedStatus) {
-        return;
-      }
+    items.sort((a, b) => {
+      const aTime = a.createdAt?.seconds ?? 0;
+      const bTime = b.createdAt?.seconds ?? 0;
+      return bTime - aTime;
+    });
 
+    const filtered = selectedStatus
+      ? items.filter(item => item.status === selectedStatus)
+      : items;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='3'>조회 결과가 없습니다.</td></tr>";
+      return;
+    }
+
+    let html = "";
+    filtered.forEach((item) => {
       html += `
         <tr>
-          <td>${id++}</td>
+          <td>${escapeHtml(item.docId)}</td>
           <td>${escapeHtml(item.title)}</td>
           <td>${escapeHtml(item.status)}</td>
         </tr>
       `;
     });
-
-    if (!html) {
-      tbody.innerHTML = "<tr><td colspan='3'>조회 결과가 없습니다.</td></tr>";
-      return;
-    }
 
     tbody.innerHTML = html;
   } catch (error) {
