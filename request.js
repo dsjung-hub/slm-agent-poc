@@ -11,12 +11,12 @@ import {
 
 // Step 2에서 복사한 firebaseConfig로 교체
 const firebaseConfig = {
-  apiKey: "여기에_apiKey",
-  authDomain: "여기에_authDomain",
-  projectId: "여기에_projectId",
-  storageBucket: "여기에_storageBucket",
-  messagingSenderId: "여기에_messagingSenderId",
-  appId: "여기에_appId"
+  apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
+  authDomain: "pl-agent-poc.firebaseapp.com",
+  projectId: "pl-agent-poc",
+  storageBucket: "pl-agent-poc.firebasestorage.app",
+  messagingSenderId: "1099031062367",
+  appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
 };
 
 const app = initializeApp(firebaseConfig);
