@@ -115,7 +115,7 @@ async function saveRequest() {
       createdAt: serverTimestamp()
     };
 
-    await addDoc(collection(db, "requests"), data);
+    await addDoc(collection(db, "complaints"), data);
 
     alert("민원이 정상적으로 등록되었습니다.");
     resetForm();
