@@ -1,40 +1,180 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  font-family: Arial, sans-serif;
-  padding: 30px;
-  color: #2c3e50;
-  background: #f7f9fc;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family: "Malgun Gothic", "맑은 고딕", Arial, sans-serif;
+  background: #f4f7fb;
+  color: #222;
 }
 
-h1, h2 {
-  color: #1f3b5b;
+body {
+  min-height: 100vh;
 }
 
+/* 상단 네비 */
 .nav {
-  margin-bottom: 24px;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px;
+  background: #1f3c88;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .nav a {
-  display: inline-block;
   text-decoration: none;
-  color: #1f3b5b;
-  background: #e8eef7;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-right: 8px;
+  color: #dfe8ff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.nav a:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .nav a.active {
-  background: #3498db;
+  background: #ffffff;
+  color: #1f3c88;
+}
+
+/* 페이지 */
+.page {
+  width: 100%;
+  max-width: 100%;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 18px;
+}
+
+.page-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.2;
+  color: #1a2b49;
+}
+
+.page-header p {
+  margin: 0;
+  color: #5b6577;
+  font-size: 15px;
+}
+
+/* 공통 박스 */
+.box {
+  width: 100%;
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(31, 60, 136, 0.08);
+}
+
+.form-box {
+  width: 100%;
+}
+
+.request-form {
+  width: 100%;
+}
+
+/* 입력 폼 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea,
+.toolbar-item select {
+  width: 100%;
+  border: 1px solid #d7deea;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+.toolbar-item select:focus {
+  border-color: #1f3c88;
+  box-shadow: 0 0 0 4px rgba(31, 60, 136, 0.08);
+}
+
+/* 버튼 */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.form-actions button {
+  min-width: 120px;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  padding: 0 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.form-actions button:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.form-actions button:not(.secondary) {
+  background: #1f3c88;
   color: #fff;
 }
 
-.box, .form-card {
-  background: #fff;
-  border: 1px solid #d8e1ea;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+.form-actions button.secondary {
+  background: #e9eef8;
+  color: #1f3c88;
 }
+
+/* 조회 툴바 */
 .toolbar {
   display: flex;
   justify-content: flex-start;
@@ -57,16 +197,7 @@ h1, h2 {
   color: #334155;
 }
 
-.toolbar-item select {
-  width: 100%;
-  border: 1px solid #d7deea;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 15px;
-  background: #fff;
-  outline: none;
-}
-
+/* 테이블 */
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -125,7 +256,57 @@ h1, h2 {
   padding: 28px 12px;
 }
 
+/* 반응형 */
+@media (max-width: 1024px) {
+  .page {
+    padding: 18px;
+  }
+
+  .box {
+    padding: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+  }
+}
+
 @media (max-width: 768px) {
+  .nav {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+
+  .page {
+    padding: 14px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .full-width {
+    grid-column: auto;
+  }
+
+  .box {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
   .toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -139,52 +320,4 @@ h1, h2 {
   .request-table {
     min-width: 720px;
   }
-}
-.form-row {
-  margin-bottom: 16px;
-}
-
-label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: bold;
-}
-
-input, select, textarea {
-  width: 100%;
-  max-width: 720px;
-  padding: 10px;
-  border: 1px solid #bcc9d6;
-  border-radius: 8px;
-  box-sizing: border-box;
-}
-
-button {
-  padding: 10px 16px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 8px;
-}
-
-button.secondary {
-  background: #7f8c8d;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-}
-
-th, td {
-  border: 1px solid #d8e1ea;
-  padding: 10px;
-  text-align: left;
-}
-
-th {
-  background: #eef4fb;
 }
