@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>POC - 민원 입력</title>
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -44,8 +45,8 @@
     </div>
 
     <div class="form-actions">
-      <button onclick="submitComplaint()">등록</button>
-      <button class="secondary" onclick="resetComplaintForm()">초기화</button>
+      <button id="submitBtn" type="button">등록</button>
+      <button id="resetBtn" type="button" class="secondary">초기화</button>
     </div>
   </div>
 
@@ -61,7 +62,11 @@
           <th>우선순위</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <tr>
+          <td colspan="5">불러오는 중...</td>
+        </tr>
+      </tbody>
     </table>
   </div>
 
