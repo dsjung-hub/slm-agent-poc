@@ -33,17 +33,15 @@ function escapeHtml(value) {
 async function getNextReqNo() {
   const snapshot = await getDocs(collection(db, "complaints"));
 
-  if (snapshot.empty) {
-    return 1;
-  }
+  if (snapshot.empty) return 1;
 
   let maxReqNo = 0;
 
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    const currentReqNo = Number(data.reqNo || 0);
-    if (currentReqNo > maxReqNo) {
-      maxReqNo = currentReqNo;
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const no = Number(data.reqNo || 0);
+    if (no > maxReqNo) {
+      maxReqNo = no;
     }
   });
 
@@ -67,15 +65,16 @@ async function loadRecentComplaints() {
 
     let html = "";
 
-    snapshot.forEach((doc) => {
-      const item = doc.data();
+    snapshot.forEach((docSnap) => {
+      const item = docSnap.data();
+
       html += `
         <tr>
           <td>${escapeHtml(item.reqNo ?? "-")}</td>
-          <td>${escapeHtml(item.title)}</td>
-          <td>${escapeHtml(item.requester)}</td>
-          <td>${escapeHtml(item.system)}</td>
-          <td>${escapeHtml(item.priority)}</td>
+          <td>${escapeHtml(item.title ?? "")}</td>
+          <td>${escapeHtml(item.requester ?? "")}</td>
+          <td>${escapeHtml(item.system ?? "")}</td>
+          <td>${escapeHtml(item.priority ?? "")}</td>
         </tr>
       `;
     });
@@ -107,7 +106,7 @@ async function submitComplaint() {
 
     const nextReqNo = await getNextReqNo();
 
-    const docRef = await addDoc(collection(db, "complaints"), {
+    await addDoc(collection(db, "complaints"), {
       reqNo: nextReqNo,
       title: complaintTitle,
       requester: requester,
@@ -117,8 +116,6 @@ async function submitComplaint() {
       status: "접수",
       createdAt: serverTimestamp()
     });
-
-    console.log("저장 성공:", docRef.id, "reqNo:", nextReqNo);
 
     alert(`민원이 Firebase에 저장되었습니다. 요구사항 번호는 ${nextReqNo}번입니다.`);
     resetComplaintForm();
