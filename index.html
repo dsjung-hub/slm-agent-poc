@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>POC - 민원조회</title>
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -23,7 +24,7 @@
       <option value="반려">반려</option>
     </select>
 
-    <button onclick="search()">조회</button>
+    <button id="searchBtn" type="button">조회</button>
   </div>
 
   <table id="result">
@@ -34,7 +35,11 @@
         <th>처리상태</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <tr>
+        <td colspan="3">불러오는 중...</td>
+      </tr>
+    </tbody>
   </table>
 
   <script type="module" src="./service.js"></script>
