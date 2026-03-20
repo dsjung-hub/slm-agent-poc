@@ -1,75 +1,88 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POC - 민원 입력</title>
-  <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-  <nav class="nav">
-    <a href="./request.html" class="active">민원 입력</a>
-    <a href="./index.html">민원 조회</a>
-  </nav>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <h1>민원 입력 (POC)</h1>
+const firebaseConfig = {
+  apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
+  authDomain: "pl-agent-poc.firebaseapp.com",
+  projectId: "pl-agent-poc",
+  storageBucket: "pl-agent-poc.firebasestorage.app",
+  messagingSenderId: "1099031062367",
+  appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
+};
 
-  <div class="form-card">
-    <div class="form-row">
-      <label for="complaintTitle">민원명</label>
-      <input id="complaintTitle" type="text" placeholder="예: 로그인 오류 수정">
-    </div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    <div class="form-row">
-      <label for="requester">요청자</label>
-      <input id="requester" type="text" placeholder="예: 홍길동">
-    </div>
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-    <div class="form-row">
-      <label for="systemName">시스템명</label>
-      <input id="systemName" type="text" placeholder="예: 민원조회 시스템">
-    </div>
+async function loadComplaints() {
+  const tbody = document.querySelector("#result tbody");
+  const selectedStatus = document.getElementById("status")?.value ?? "";
 
-    <div class="form-row">
-      <label for="priority">우선순위</label>
-      <select id="priority">
-        <option value="상">상</option>
-        <option value="중" selected>중</option>
-        <option value="하">하</option>
-      </select>
-    </div>
+  if (!tbody) return;
 
-    <div class="form-row">
-      <label for="detail">요청내용</label>
-      <textarea id="detail" rows="6" placeholder="예: 로그인 시 오류 메시지가 발생합니다."></textarea>
-    </div>
+  tbody.innerHTML = "<tr><td colspan='3'>불러오는 중...</td></tr>";
 
-    <div class="form-actions">
-      <button id="submitBtn" type="button">등록</button>
-      <button id="resetBtn" type="button" class="secondary">초기화</button>
-    </div>
-  </div>
+  try {
+    const snapshot = await getDocs(collection(db, "complaints"));
 
-  <div class="box">
-    <h2>최근 등록 내역</h2>
-    <table id="requestResult">
-      <thead>
+    if (snapshot.empty) {
+      tbody.innerHTML = "<tr><td colspan='3'>등록된 민원이 없습니다.</td></tr>";
+      return;
+    }
+
+    const items = [];
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      items.push({
+        reqNo: data.reqNo ?? "-",
+        title: data.title ?? "",
+        status: data.status ?? ""
+      });
+    });
+
+    items.sort((a, b) => Number(b.reqNo || 0) - Number(a.reqNo || 0));
+
+    const filtered = selectedStatus
+      ? items.filter((item) => item.status === selectedStatus)
+      : items;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='3'>조회 결과가 없습니다.</td></tr>";
+      return;
+    }
+
+    let html = "";
+    filtered.forEach((item) => {
+      html += `
         <tr>
-          <th>No</th>
-          <th>민원명</th>
-          <th>요청자</th>
-          <th>시스템명</th>
-          <th>우선순위</th>
+          <td>${escapeHtml(item.reqNo)}</td>
+          <td>${escapeHtml(item.title)}</td>
+          <td>${escapeHtml(item.status)}</td>
         </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="5">불러오는 중...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+      `;
+    });
 
-  <script type="module" src="./request.js"></script>
-</body>
-</html>
+    tbody.innerHTML = html;
+  } catch (error) {
+    console.error("민원 조회 오류:", error);
+    tbody.innerHTML = "<tr><td colspan='3'>조회 중 오류가 발생했습니다.</td></tr>";
+  }
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+  document.getElementById("searchBtn")?.addEventListener("click", loadComplaints);
+  await loadComplaints();
+});
