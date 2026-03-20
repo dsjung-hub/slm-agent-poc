@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>민원 입력 (POC)</title>
 
   <style>
@@ -42,7 +42,7 @@
       background: white;
       padding: 24px;
       border-radius: 16px;
-      width: 420px;
+      width: 520px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
@@ -53,13 +53,19 @@
       font-weight: bold;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
       font-size: 14px;
       margin-bottom: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
     }
 
     .form-actions {
@@ -83,11 +89,15 @@
       background: #ccc;
       color: black;
     }
+
+    #message {
+      margin-top: 16px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 상단 버튼 -->
   <div class="nav-buttons">
     <a href="./request.html" class="nav-btn active">민원 입력</a>
     <a href="./index.html" class="nav-btn">민원 조회</a>
@@ -95,32 +105,34 @@
 
   <h1>민원 입력 (POC)</h1>
 
-  <!-- 입력폼 -->
   <div class="form-box">
-
-    <label>요구사항 번호</label>
-    <input type="text" id="reqNo" placeholder="예: 1">
-
-    <label>민원명</label>
+    <label for="title">민원명</label>
     <input type="text" id="title" placeholder="예: 로그인 오류">
 
-    <label>처리상태</label>
-    <select id="status">
-      <option value="접수">접수</option>
-      <option value="처리중">처리중</option>
-      <option value="완료">완료</option>
-      <option value="반려">반려</option>
+    <label for="requester">요청자</label>
+    <input type="text" id="requester" placeholder="예: 홍길동">
+
+    <label for="system_name">시스템명</label>
+    <input type="text" id="system_name" placeholder="예: 민원시스템">
+
+    <label for="priority">우선순위</label>
+    <select id="priority">
+      <option value="상">상</option>
+      <option value="중" selected>중</option>
+      <option value="하">하</option>
     </select>
+
+    <label for="detail">요청내용</label>
+    <textarea id="detail" placeholder="요청 내용을 입력하세요"></textarea>
 
     <div class="form-actions">
       <button id="submitBtn" type="button">등록</button>
-      <button id="resetBtn" type="button" class="secondary">초기화</button>
+      <button id="resetBtn" type="button">초기화</button>
     </div>
 
+    <div id="message"></div>
   </div>
 
-  <!-- JS 연결 -->
   <script type="module" src="./request.js"></script>
-
 </body>
 </html>
