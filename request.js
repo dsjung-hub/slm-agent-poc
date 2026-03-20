@@ -3,139 +3,134 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
-  query,
-  orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
-  authDomain: "pl-agent-poc.firebaseapp.com",
-  projectId: "pl-agent-poc",
-  storageBucket: "pl-agent-poc.firebasestorage.app",
-  messagingSenderId: "1099031062367",
-  appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
+  apiKey: "여기에_본인_API_KEY",
+  authDomain: "여기에_본인_AUTH_DOMAIN",
+  projectId: "여기에_본인_PROJECT_ID",
+  storageBucket: "여기에_본인_STORAGE_BUCKET",
+  messagingSenderId: "여기에_본인_MESSAGING_SENDER_ID",
+  appId: "여기에_본인_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+const reqNoEl = document.getElementById("reqNo");
+const titleEl = document.getElementById("title");
+const categoryEl = document.getElementById("category");
+const statusEl = document.getElementById("status");
+const requesterEl = document.getElementById("requester");
+const phoneEl = document.getElementById("phone");
+const emailEl = document.getElementById("email");
+const dateEl = document.getElementById("date");
+const contentEl = document.getElementById("content");
+const memoEl = document.getElementById("memo");
+
+const submitBtn = document.getElementById("submitBtn");
+const resetBtn = document.getElementById("resetBtn");
+
+function setToday() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  dateEl.value = `${year}-${month}-${day}`;
 }
 
-async function getNextReqNo() {
-  const snapshot = await getDocs(collection(db, "complaints"));
-
-  if (snapshot.empty) return 1;
-
-  let maxReqNo = 0;
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const no = Number(data.reqNo || 0);
-    if (no > maxReqNo) {
-      maxReqNo = no;
-    }
-  });
-
-  return maxReqNo + 1;
+function resetForm() {
+  reqNoEl.value = "";
+  titleEl.value = "";
+  categoryEl.value = "";
+  statusEl.value = "접수";
+  requesterEl.value = "";
+  phoneEl.value = "";
+  emailEl.value = "";
+  contentEl.value = "";
+  memoEl.value = "";
+  setToday();
+  reqNoEl.focus();
 }
 
-async function loadRecentComplaints() {
-  const tbody = document.querySelector("#requestResult tbody");
-  if (!tbody) return;
-
-  tbody.innerHTML = "<tr><td colspan='5'>불러오는 중...</td></tr>";
-
-  try {
-    const q = query(collection(db, "complaints"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='5'>등록된 민원이 없습니다.</td></tr>";
-      return;
-    }
-
-    let html = "";
-    snapshot.forEach((docSnap) => {
-      const item = docSnap.data();
-      html += `
-        <tr>
-          <td>${escapeHtml(item.reqNo ?? "-")}</td>
-          <td>${escapeHtml(item.title ?? "")}</td>
-          <td>${escapeHtml(item.requester ?? "")}</td>
-          <td>${escapeHtml(item.system ?? "")}</td>
-          <td>${escapeHtml(item.priority ?? "")}</td>
-        </tr>
-      `;
-    });
-
-    tbody.innerHTML = html;
-  } catch (error) {
-    console.error("최근 등록 내역 조회 오류:", error);
-    tbody.innerHTML = "<tr><td colspan='5'>조회 중 오류가 발생했습니다.</td></tr>";
-  }
-}
-
-async function submitComplaint() {
-  const submitBtn = document.getElementById("submitBtn");
-
-  const complaintTitle = document.getElementById("complaintTitle")?.value.trim();
-  const requester = document.getElementById("requester")?.value.trim();
-  const systemName = document.getElementById("systemName")?.value.trim();
-  const priority = document.getElementById("priority")?.value;
-  const detail = document.getElementById("detail")?.value.trim();
-
-  if (!complaintTitle || !requester || !systemName || !priority || !detail) {
-    alert("모든 항목을 입력하세요.");
-    return;
+function validateForm() {
+  if (!reqNoEl.value.trim()) {
+    alert("요구사항 번호를 입력하세요.");
+    reqNoEl.focus();
+    return false;
   }
 
+  if (!titleEl.value.trim()) {
+    alert("제목을 입력하세요.");
+    titleEl.focus();
+    return false;
+  }
+
+  if (!categoryEl.value.trim()) {
+    alert("민원 유형을 선택하세요.");
+    categoryEl.focus();
+    return false;
+  }
+
+  if (!requesterEl.value.trim()) {
+    alert("신청자를 입력하세요.");
+    requesterEl.focus();
+    return false;
+  }
+
+  if (!dateEl.value.trim()) {
+    alert("요청일자를 입력하세요.");
+    dateEl.focus();
+    return false;
+  }
+
+  if (!contentEl.value.trim()) {
+    alert("요청내용을 입력하세요.");
+    contentEl.focus();
+    return false;
+  }
+
+  return true;
+}
+
+async function saveRequest() {
+  if (!validateForm()) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "등록중...";
+
   try {
-    submitBtn.disabled = true;
-    submitBtn.textContent = "등록 중...";
-
-    const nextReqNo = await getNextReqNo();
-
-    await addDoc(collection(db, "complaints"), {
-      reqNo: nextReqNo,
-      title: complaintTitle,
-      requester: requester,
-      system: systemName,
-      priority: priority,
-      content: detail,
-      status: "접수",
+    const data = {
+      reqNo: reqNoEl.value.trim(),
+      title: titleEl.value.trim(),
+      category: categoryEl.value.trim(),
+      status: statusEl.value.trim(),
+      requester: requesterEl.value.trim(),
+      phone: phoneEl.value.trim(),
+      email: emailEl.value.trim(),
+      requestDate: dateEl.value,
+      content: contentEl.value.trim(),
+      memo: memoEl.value.trim(),
       createdAt: serverTimestamp()
-    });
+    };
 
-    alert(`민원이 Firebase에 저장되었습니다. 요구사항 번호는 ${nextReqNo}번입니다.`);
-    resetComplaintForm();
-    await loadRecentComplaints();
+    await addDoc(collection(db, "requests"), data);
+
+    alert("민원이 정상적으로 등록되었습니다.");
+    resetForm();
   } catch (error) {
-    console.error("민원 저장 오류:", error);
-    alert("저장 중 오류가 발생했습니다. F12 → Console을 확인하세요.");
+    console.error("등록 오류:", error);
+    alert("등록 중 오류가 발생했습니다. 콘솔을 확인하세요.");
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = "등록";
   }
 }
 
-function resetComplaintForm() {
-  document.getElementById("complaintTitle").value = "";
-  document.getElementById("requester").value = "";
-  document.getElementById("systemName").value = "";
-  document.getElementById("priority").value = "중";
-  document.getElementById("detail").value = "";
-}
+submitBtn.addEventListener("click", saveRequest);
+resetBtn.addEventListener("click", resetForm);
 
-window.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("submitBtn")?.addEventListener("click", submitComplaint);
-  document.getElementById("resetBtn")?.addEventListener("click", resetComplaintForm);
-  await loadRecentComplaints();
+window.addEventListener("DOMContentLoaded", () => {
+  setToday();
 });
