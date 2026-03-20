@@ -10,6 +10,29 @@
       margin: 24px;
       background: #f7f8fa;
     }
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .nav-btn {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: bold;
+      background: #e9eef5;
+      color: #26415f;
+    }
+    .nav-btn.active {
+      background: #3b97db;
+      color: white;
+    }
+    .nav-btn.secondary {
+      background: #e9eef5;
+      color: #26415f;
+    }
     h1 {
       margin-bottom: 16px;
     }
@@ -42,6 +65,11 @@
   </style>
 </head>
 <body>
+  <div class="nav-buttons">
+    <a href="index.html" class="nav-btn secondary">민원 입력</a>
+    <a href="request.html" class="nav-btn active">민원 조회</a>
+  </div>
+
   <h1>민원 조회 (POC)</h1>
 
   <div class="toolbar">
