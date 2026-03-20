@@ -46,18 +46,14 @@ async function loadComplaints() {
     snapshot.forEach((doc) => {
       const data = doc.data();
       items.push({
-        docId: doc.id,
+        reqNo: data.reqNo ?? "-",
         title: data.title ?? "",
         status: data.status ?? "",
         createdAt: data.createdAt ?? null
       });
     });
 
-    items.sort((a, b) => {
-      const aTime = a.createdAt?.seconds ?? 0;
-      const bTime = b.createdAt?.seconds ?? 0;
-      return bTime - aTime;
-    });
+    items.sort((a, b) => Number(b.reqNo || 0) - Number(a.reqNo || 0));
 
     const filtered = selectedStatus
       ? items.filter(item => item.status === selectedStatus)
@@ -72,7 +68,7 @@ async function loadComplaints() {
     filtered.forEach((item) => {
       html += `
         <tr>
-          <td>${escapeHtml(item.docId)}</td>
+          <td>${escapeHtml(item.reqNo)}</td>
           <td>${escapeHtml(item.title)}</td>
           <td>${escapeHtml(item.status)}</td>
         </tr>
