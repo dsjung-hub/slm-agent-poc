@@ -2,7 +2,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
-  getDocs
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -28,74 +32,98 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-async function loadComplaints() {
-  const tbody = document.querySelector("#result tbody");
-  const selectedStatus = document.getElementById("status")?.value ?? "";
-
+async function loadRecentComplaints() {
+  const tbody = document.querySelector("#requestResult tbody");
   if (!tbody) return;
 
-  tbody.innerHTML = "<tr><td colspan='3'>불러오는 중...</td></tr>";
+  tbody.innerHTML = "<tr><td colspan='5'>불러오는 중...</td></tr>";
 
   try {
-    const snapshot = await getDocs(collection(db, "complaints"));
-
-    console.log("complaints count =", snapshot.size);
+    const q = query(collection(db, "complaints"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='3'>등록된 민원이 없습니다.</td></tr>";
-      return;
-    }
-
-    const items = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      items.push({
-        docId: doc.id,
-        title: data.title ?? "",
-        status: data.status ?? "",
-        createdAt: data.createdAt ?? null
-      });
-    });
-
-    items.sort((a, b) => {
-      const aTime = a.createdAt?.seconds ?? 0;
-      const bTime = b.createdAt?.seconds ?? 0;
-      return bTime - aTime;
-    });
-
-    const filtered = selectedStatus
-      ? items.filter(item => item.status === selectedStatus)
-      : items;
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='3'>조회 결과가 없습니다.</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='5'>등록된 민원이 없습니다.</td></tr>";
       return;
     }
 
     let html = "";
-    filtered.forEach((item) => {
+    let no = 1;
+
+    snapshot.forEach((doc) => {
+      const item = doc.data();
       html += `
         <tr>
-          <td>${escapeHtml(item.docId)}</td>
+          <td>${no++}</td>
           <td>${escapeHtml(item.title)}</td>
-          <td>${escapeHtml(item.status)}</td>
+          <td>${escapeHtml(item.requester)}</td>
+          <td>${escapeHtml(item.system)}</td>
+          <td>${escapeHtml(item.priority)}</td>
         </tr>
       `;
     });
 
     tbody.innerHTML = html;
   } catch (error) {
-    console.error("민원 조회 오류:", error);
-    tbody.innerHTML = "<tr><td colspan='3'>조회 중 오류가 발생했습니다.</td></tr>";
+    console.error("최근 등록 내역 조회 오류:", error);
+    tbody.innerHTML = "<tr><td colspan='5'>조회 중 오류가 발생했습니다.</td></tr>";
   }
 }
 
-function search() {
-  loadComplaints();
+async function submitComplaint() {
+  const submitBtn = document.getElementById("submitBtn");
+
+  const complaintTitle = document.getElementById("complaintTitle")?.value.trim();
+  const requester = document.getElementById("requester")?.value.trim();
+  const systemName = document.getElementById("systemName")?.value.trim();
+  const priority = document.getElementById("priority")?.value;
+  const detail = document.getElementById("detail")?.value.trim();
+
+  if (!complaintTitle || !requester || !systemName || !priority || !detail) {
+    alert("모든 항목을 입력하세요.");
+    return;
+  }
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "등록 중...";
+
+    console.log("저장 시작");
+
+    await addDoc(collection(db, "complaints"), {
+      title: complaintTitle,
+      requester: requester,
+      system: systemName,
+      priority: priority,
+      content: detail,
+      status: "접수",
+      createdAt: serverTimestamp()
+    });
+
+    console.log("저장 성공");
+
+    alert("민원이 Firebase에 저장되었습니다.");
+    resetComplaintForm();
+    await loadRecentComplaints();
+  } catch (error) {
+    console.error("민원 저장 오류:", error);
+    alert("저장 중 오류가 발생했습니다. F12 → Console을 확인하세요.");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "등록";
+  }
 }
 
-window.search = search;
+function resetComplaintForm() {
+  document.getElementById("complaintTitle").value = "";
+  document.getElementById("requester").value = "";
+  document.getElementById("systemName").value = "";
+  document.getElementById("priority").value = "중";
+  document.getElementById("detail").value = "";
+}
 
 window.addEventListener("DOMContentLoaded", async () => {
-  await loadComplaints();
+  document.getElementById("submitBtn")?.addEventListener("click", submitComplaint);
+  document.getElementById("resetBtn")?.addEventListener("click", resetComplaintForm);
+  await loadRecentComplaints();
 });
