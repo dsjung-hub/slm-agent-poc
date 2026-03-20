@@ -21,8 +21,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log("firebase projectId =", firebaseConfig.projectId);
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -30,6 +28,26 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+async function getNextReqNo() {
+  const snapshot = await getDocs(collection(db, "complaints"));
+
+  if (snapshot.empty) {
+    return 1;
+  }
+
+  let maxReqNo = 0;
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const currentReqNo = Number(data.reqNo || 0);
+    if (currentReqNo > maxReqNo) {
+      maxReqNo = currentReqNo;
+    }
+  });
+
+  return maxReqNo + 1;
 }
 
 async function loadRecentComplaints() {
@@ -48,13 +66,12 @@ async function loadRecentComplaints() {
     }
 
     let html = "";
-    let no = 1;
 
     snapshot.forEach((doc) => {
       const item = doc.data();
       html += `
         <tr>
-          <td>${no++}</td>
+          <td>${escapeHtml(item.reqNo ?? "-")}</td>
           <td>${escapeHtml(item.title)}</td>
           <td>${escapeHtml(item.requester)}</td>
           <td>${escapeHtml(item.system)}</td>
@@ -88,9 +105,10 @@ async function submitComplaint() {
     submitBtn.disabled = true;
     submitBtn.textContent = "등록 중...";
 
-    console.log("저장 시작");
+    const nextReqNo = await getNextReqNo();
 
-    await addDoc(collection(db, "complaints"), {
+    const docRef = await addDoc(collection(db, "complaints"), {
+      reqNo: nextReqNo,
       title: complaintTitle,
       requester: requester,
       system: systemName,
@@ -100,9 +118,9 @@ async function submitComplaint() {
       createdAt: serverTimestamp()
     });
 
-    console.log("저장 성공");
+    console.log("저장 성공:", docRef.id, "reqNo:", nextReqNo);
 
-    alert("민원이 Firebase에 저장되었습니다.");
+    alert(`민원이 Firebase에 저장되었습니다. 요구사항 번호는 ${nextReqNo}번입니다.`);
     resetComplaintForm();
     await loadRecentComplaints();
   } catch (error) {
