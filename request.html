@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>민원 입력 (POC)</title>
 
   <style>
@@ -12,21 +12,24 @@
       background: #f7f8fa;
     }
 
-    .nav {
-      margin-bottom: 20px;
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
-    .nav a {
-      padding: 12px 20px;
-      margin-right: 8px;
+    .nav-btn {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: 14px;
       text-decoration: none;
-      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
       background: #e9eef5;
       color: #26415f;
-      font-weight: bold;
     }
 
-    .nav a.active {
+    .nav-btn.active {
       background: #3b97db;
       color: white;
     }
@@ -38,8 +41,9 @@
     .form-box {
       background: white;
       padding: 24px;
-      border-radius: 12px;
-      width: 400px;
+      border-radius: 16px;
+      width: 420px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     label {
@@ -51,9 +55,11 @@
 
     input, select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       font-size: 14px;
       margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
 
     .form-actions {
@@ -75,20 +81,21 @@
 
     #resetBtn {
       background: #ccc;
+      color: black;
     }
   </style>
 </head>
 <body>
 
-  <!-- 상단 메뉴 -->
-  <div class="nav">
-    <a href="./request.html" class="active">민원 입력</a>
-    <a href="./index.html">민원 조회</a>
+  <!-- 상단 버튼 -->
+  <div class="nav-buttons">
+    <a href="./request.html" class="nav-btn active">민원 입력</a>
+    <a href="./index.html" class="nav-btn">민원 조회</a>
   </div>
 
   <h1>민원 입력 (POC)</h1>
 
-  <!-- 입력 폼 -->
+  <!-- 입력폼 -->
   <div class="form-box">
 
     <label>요구사항 번호</label>
@@ -106,8 +113,8 @@
     </select>
 
     <div class="form-actions">
-      <button id="submitBtn">등록</button>
-      <button id="resetBtn">초기화</button>
+      <button id="submitBtn" type="button">등록</button>
+      <button id="resetBtn" type="button" class="secondary">초기화</button>
     </div>
 
   </div>
