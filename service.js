@@ -43,20 +43,20 @@ async function loadComplaints() {
     }
 
     const items = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
       items.push({
         reqNo: data.reqNo ?? "-",
         title: data.title ?? "",
-        status: data.status ?? "",
-        createdAt: data.createdAt ?? null
+        status: data.status ?? ""
       });
     });
 
     items.sort((a, b) => Number(b.reqNo || 0) - Number(a.reqNo || 0));
 
     const filtered = selectedStatus
-      ? items.filter(item => item.status === selectedStatus)
+      ? items.filter((item) => item.status === selectedStatus)
       : items;
 
     if (filtered.length === 0) {
@@ -82,12 +82,7 @@ async function loadComplaints() {
   }
 }
 
-function search() {
-  loadComplaints();
-}
-
-window.search = search;
-
 window.addEventListener("DOMContentLoaded", async () => {
+  document.getElementById("searchBtn")?.addEventListener("click", loadComplaints);
   await loadComplaints();
 });
