@@ -7,12 +7,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "여기에_본인_API_KEY",
-  authDomain: "여기에_본인_AUTH_DOMAIN",
-  projectId: "여기에_본인_PROJECT_ID",
-  storageBucket: "여기에_본인_STORAGE_BUCKET",
-  messagingSenderId: "여기에_본인_MESSAGING_SENDER_ID",
-  appId: "여기에_본인_APP_ID"
+  apiKey: "AIzaSyCMAhzThQbNKs6UpzfysbzEji1qHi-CKho",
+  authDomain: "pl-agent-poc.firebaseapp.com",
+  projectId: "pl-agent-poc",
+  storageBucket: "pl-agent-poc.firebasestorage.app",
+  messagingSenderId: "1099031062367",
+  appId: "1:1099031062367:web:6bf75315ec9d4e941378ea"
 };
 
 const app = initializeApp(firebaseConfig);
