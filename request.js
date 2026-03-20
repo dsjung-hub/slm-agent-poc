@@ -1,45 +1,104 @@
-const requests = [
-  { no: 1, title: "처리상태 검색조건 추가", requester: "홍길동", system: "민원조회 시스템", priority: "중" }
-];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-function renderRequests() {
-  const tbody = document.querySelector("#requestResult tbody");
-  tbody.innerHTML = "";
-  requests.forEach(item => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${item.no}</td>
-        <td>${item.title}</td>
-        <td>${item.requester}</td>
-        <td>${item.system}</td>
-        <td>${item.priority}</td>
-      </tr>
-    `;
-  });
+// Step 2에서 복사한 firebaseConfig로 교체
+const firebaseConfig = {
+  apiKey: "여기에_apiKey",
+  authDomain: "여기에_authDomain",
+  projectId: "여기에_projectId",
+  storageBucket: "여기에_storageBucket",
+  messagingSenderId: "여기에_messagingSenderId",
+  appId: "여기에_appId"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function submitComplaint() {
-  const title = document.getElementById("complaintTitle").value.trim();
-  const requester = document.getElementById("requester").value.trim();
-  const system = document.getElementById("systemName").value.trim();
-  const priority = document.getElementById("priority").value;
+async function loadRecentComplaints() {
+  const tbody = document.querySelector("#requestResult tbody");
+  if (!tbody) return;
 
-  if (!title || !requester || !system) {
-    alert("민원명, 요청자, 시스템명은 필수입니다.");
+  tbody.innerHTML = "<tr><td colspan='5'>불러오는 중...</td></tr>";
+
+  try {
+    const q = query(collection(db, "complaints"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      tbody.innerHTML = "<tr><td colspan='5'>등록된 민원이 없습니다.</td></tr>";
+      return;
+    }
+
+    let html = "";
+    let no = 1;
+
+    snapshot.forEach((doc) => {
+      const item = doc.data();
+      html += `
+        <tr>
+          <td>${no++}</td>
+          <td>${escapeHtml(item.title)}</td>
+          <td>${escapeHtml(item.requester)}</td>
+          <td>${escapeHtml(item.system)}</td>
+          <td>${escapeHtml(item.priority)}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+  } catch (error) {
+    console.error("최근 등록 내역 조회 오류:", error);
+    tbody.innerHTML = "<tr><td colspan='5'>조회 중 오류가 발생했습니다.</td></tr>";
+  }
+}
+
+async function submitComplaint() {
+  const complaintTitle = document.getElementById("complaintTitle")?.value.trim();
+  const requester = document.getElementById("requester")?.value.trim();
+  const systemName = document.getElementById("systemName")?.value.trim();
+  const priority = document.getElementById("priority")?.value;
+  const detail = document.getElementById("detail")?.value.trim();
+
+  if (!complaintTitle || !requester || !systemName || !priority || !detail) {
+    alert("모든 항목을 입력하세요.");
     return;
   }
 
-  requests.unshift({
-    no: requests.length + 1,
-    title,
-    requester,
-    system,
-    priority
-  });
+  try {
+    await addDoc(collection(db, "complaints"), {
+      title: complaintTitle,
+      requester: requester,
+      system: systemName,
+      priority: priority,
+      content: detail,
+      status: "접수",
+      createdAt: serverTimestamp()
+    });
 
-  renderRequests();
-  alert("민원이 등록되었습니다.");
-  resetComplaintForm();
+    alert("민원이 Firebase에 저장되었습니다.");
+    resetComplaintForm();
+    await loadRecentComplaints();
+  } catch (error) {
+    console.error("민원 저장 오류:", error);
+    alert("저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+  }
 }
 
 function resetComplaintForm() {
@@ -50,4 +109,9 @@ function resetComplaintForm() {
   document.getElementById("detail").value = "";
 }
 
-window.onload = renderRequests;
+window.submitComplaint = submitComplaint;
+window.resetComplaintForm = resetComplaintForm;
+
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadRecentComplaints();
+});
