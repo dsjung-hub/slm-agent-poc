@@ -141,7 +141,6 @@ function bindDetailEvents() {
 
 function applyFilter() {
   const selectedStatus = statusEl ? statusEl.value : "";
-
   let filtered = [...allRequests];
 
   if (selectedStatus) {
