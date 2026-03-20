@@ -36,7 +36,6 @@ async function getNextReqNo() {
   if (snapshot.empty) return 1;
 
   let maxReqNo = 0;
-
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
     const no = Number(data.reqNo || 0);
@@ -64,10 +63,8 @@ async function loadRecentComplaints() {
     }
 
     let html = "";
-
     snapshot.forEach((docSnap) => {
       const item = docSnap.data();
-
       html += `
         <tr>
           <td>${escapeHtml(item.reqNo ?? "-")}</td>
