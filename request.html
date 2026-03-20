@@ -3,24 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>민원 입력</title>
-  <link rel="stylesheet" href="./style.css">
+  <title>민원 입력 (POC)</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background: #f7f8fa;
+    }
+
+    .nav {
+      margin-bottom: 20px;
+    }
+
+    .nav a {
+      padding: 12px 20px;
+      margin-right: 8px;
+      text-decoration: none;
+      border-radius: 10px;
+      background: #e9eef5;
+      color: #26415f;
+      font-weight: bold;
+    }
+
+    .nav a.active {
+      background: #3b97db;
+      color: white;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .form-box {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      width: 400px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .form-actions {
+      margin-top: 16px;
+    }
+
+    button {
+      padding: 10px 16px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #submitBtn {
+      background: #3b97db;
+      color: white;
+    }
+
+    #resetBtn {
+      background: #ccc;
+    }
+  </style>
 </head>
 <body>
 
-  <nav class="nav">
+  <!-- 상단 메뉴 -->
+  <div class="nav">
     <a href="./request.html" class="active">민원 입력</a>
     <a href="./index.html">민원 조회</a>
-  </nav>
+  </div>
 
-  <h1>민원 입력</h1>
+  <h1>민원 입력 (POC)</h1>
 
-  <div class="box">
+  <!-- 입력 폼 -->
+  <div class="form-box">
+
     <label>요구사항 번호</label>
-    <input type="text" id="reqNo">
+    <input type="text" id="reqNo" placeholder="예: 1">
 
     <label>민원명</label>
-    <input type="text" id="title">
+    <input type="text" id="title" placeholder="예: 로그인 오류">
 
     <label>처리상태</label>
     <select id="status">
@@ -30,9 +105,14 @@
       <option value="반려">반려</option>
     </select>
 
-    <button id="submitBtn">등록</button>
+    <div class="form-actions">
+      <button id="submitBtn">등록</button>
+      <button id="resetBtn">초기화</button>
+    </div>
+
   </div>
 
+  <!-- JS 연결 -->
   <script type="module" src="./request.js"></script>
 
 </body>
