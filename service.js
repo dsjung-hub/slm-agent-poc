@@ -2,7 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
-  getDocs
+  getDocs,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -17,143 +19,164 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+const statusEl = document.getElementById("status");
+const tbodyEl = document.getElementById("tbody");
 
-function truncateText(value, maxLength = 15) {
-  const text = String(value ?? "");
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
+let allRequests = [];
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function formatDate(value) {
-  if (!value) return "";
+  if (!value) return "-";
 
-  try {
-    if (typeof value === "string") {
-      return value.replace("T", " ");
-    }
+  if (typeof value === "string") return value;
 
-    if (value.toDate) {
-      return value.toDate().toLocaleString("ko-KR");
-    }
-
-    return String(value);
-  } catch (e) {
-    return String(value);
+  if (value.seconds) {
+    const date = new Date(value.seconds * 1000);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   }
+
+  return "-";
 }
 
-async function loadComplaints() {
-  const tbody = document.querySelector("#result tbody");
-  const selectedStatus = document.getElementById("status")?.value ?? "";
+function shortenText(text, maxLength = 15) {
+  const safeText = (text || "").trim();
+  if (!safeText) return "-";
+  if (safeText.length <= maxLength) return safeText;
+  return safeText.substring(0, maxLength) + "...";
+}
 
-  if (!tbody) return;
+function renderTable(list) {
+  if (!tbodyEl) return;
 
-  tbody.innerHTML = "<tr><td colspan='8'>불러오는 중...</td></tr>";
+  if (!list.length) {
+    tbodyEl.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-row">조회된 민원이 없습니다.</td>
+      </tr>
+    `;
+    return;
+  }
 
-  try {
-    const snapshot = await getDocs(collection(db, "complaints"));
+  tbodyEl.innerHTML = list
+    .map((item, index) => {
+      const reqNo = escapeHtml(item.reqNo || "-");
+      const title = escapeHtml(item.title || "-");
+      const category = escapeHtml(item.category || "-");
+      const status = escapeHtml(item.status || "-");
+      const requester = escapeHtml(item.requester || "-");
+      const requestDate = escapeHtml(formatDate(item.requestDate || item.createdAt));
+      const contentSummary = escapeHtml(shortenText(item.content, 15));
+      const contentDetail = escapeHtml(item.content || "-");
+      const memo = escapeHtml(item.memo || "-");
+      const phone = escapeHtml(item.phone || "-");
+      const email = escapeHtml(item.email || "-");
 
-    if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='8'>등록된 민원이 없습니다.</td></tr>";
-      return;
-    }
-
-    const items = [];
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-
-      items.push({
-        docId: docSnap.id,
-        id: data.id ?? data.reqNo ?? docSnap.id,
-        title: data.title ?? "",
-        requester: data.requester ?? "",
-        system_name: data.system_name ?? "",
-        priority: data.priority ?? "",
-        detail: data.detail ?? "",
-        status: data.status ?? "",
-        created_at: data.created_at ?? ""
-      });
-    });
-
-    items.sort((a, b) => {
-      const aNum = Number(a.id);
-      const bNum = Number(b.id);
-      if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
-        return bNum - aNum;
-      }
-      return String(b.id).localeCompare(String(a.id));
-    });
-
-    const filtered = selectedStatus
-      ? items.filter((item) => item.status === selectedStatus)
-      : items;
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='8'>조회 결과가 없습니다.</td></tr>";
-      return;
-    }
-
-    let html = "";
-    filtered.forEach((item, index) => {
-      const shortDetail = truncateText(item.detail, 15);
-      const detailId = `detail-${index}`;
-
-      html += `
-        <tr>
-          <td>${escapeHtml(item.id)}</td>
-          <td>${escapeHtml(item.title)}</td>
-          <td>${escapeHtml(item.requester)}</td>
-          <td>${escapeHtml(item.system_name)}</td>
-          <td>${escapeHtml(item.priority)}</td>
-          <td>
-            <span 
-              class="detail-toggle" 
-              data-target="${detailId}"
-              style="cursor:pointer; color:#0b57d0; text-decoration:underline;"
-            >
-              ${escapeHtml(shortDetail)}
-            </span>
-            <div 
-              id="${detailId}" 
-              class="detail-content" 
-              style="display:none; margin-top:6px; white-space:pre-wrap; color:#333;"
-            >
-              ${escapeHtml(item.detail)}
+      return `
+        <tr class="data-row" data-detail-id="detail-${index}">
+          <td>${reqNo}</td>
+          <td>${title}</td>
+          <td>${category}</td>
+          <td>${status}</td>
+          <td>${requester}</td>
+          <td>${requestDate}</td>
+          <td>${contentSummary}</td>
+        </tr>
+        <tr class="detail-row" id="detail-${index}" style="display:none;">
+          <td colspan="7">
+            <div class="detail-box">
+              <p><strong>요구사항 번호:</strong> ${reqNo}</p>
+              <p><strong>제목:</strong> ${title}</p>
+              <p><strong>민원 유형:</strong> ${category}</p>
+              <p><strong>처리상태:</strong> ${status}</p>
+              <p><strong>신청자:</strong> ${requester}</p>
+              <p><strong>연락처:</strong> ${phone}</p>
+              <p><strong>이메일:</strong> ${email}</p>
+              <p><strong>요청일자:</strong> ${requestDate}</p>
+              <p><strong>요청내용:</strong><br>${contentDetail.replace(/\n/g, "<br>")}</p>
+              <p><strong>비고:</strong><br>${memo.replace(/\n/g, "<br>")}</p>
             </div>
           </td>
-          <td>${escapeHtml(item.status)}</td>
-          <td>${escapeHtml(formatDate(item.created_at))}</td>
         </tr>
       `;
-    });
+    })
+    .join("");
 
-    tbody.innerHTML = html;
+  bindDetailEvents();
+}
 
-    document.querySelectorAll(".detail-toggle").forEach((el) => {
-      el.addEventListener("click", () => {
-        const targetId = el.getAttribute("data-target");
-        const detailBox = document.getElementById(targetId);
-        if (!detailBox) return;
+function bindDetailEvents() {
+  const rows = document.querySelectorAll(".data-row");
 
-        detailBox.style.display =
-          detailBox.style.display === "none" ? "block" : "none";
+  rows.forEach((row) => {
+    row.addEventListener("click", () => {
+      const detailId = row.dataset.detailId;
+      const detailRow = document.getElementById(detailId);
+
+      if (!detailRow) return;
+
+      const isOpen = detailRow.style.display === "table-row";
+
+      document.querySelectorAll(".detail-row").forEach((el) => {
+        el.style.display = "none";
       });
+
+      if (!isOpen) {
+        detailRow.style.display = "table-row";
+      }
     });
+  });
+}
+
+function applyFilter() {
+  const selectedStatus = statusEl ? statusEl.value : "";
+
+  let filtered = [...allRequests];
+
+  if (selectedStatus) {
+    filtered = filtered.filter((item) => item.status === selectedStatus);
+  }
+
+  renderTable(filtered);
+}
+
+async function loadRequests() {
+  try {
+    const q = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    allRequests = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    applyFilter();
   } catch (error) {
-    console.error("민원 조회 오류:", error);
-    tbody.innerHTML = "<tr><td colspan='8'>조회 중 오류가 발생했습니다.</td></tr>";
+    console.error("조회 오류:", error);
+
+    if (tbodyEl) {
+      tbodyEl.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty-row">데이터를 불러오는 중 오류가 발생했습니다.</td>
+        </tr>
+      `;
+    }
   }
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("searchBtn")?.addEventListener("click", loadComplaints);
-  await loadComplaints();
-});
+if (statusEl) {
+  statusEl.addEventListener("change", applyFilter);
+}
+
+window.addEventListener("DOMContentLoaded", loadRequests);
